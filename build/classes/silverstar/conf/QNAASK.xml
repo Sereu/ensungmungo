@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="QNAASK">
+
+	<typeAlias alias="QnaAsk" type="silverstar.qna.QnaAsk"/>
+	
+	<insert id="insertQnaAsk" parameterClass="QnaAsk">
+		insert into qna_ask (qna_no, qna_ask_title, qna_ask_contents, qna_ask_date)
+		values ( #qnaNo#, #qnaAskTitle#, #qnaAskContents#, sysdate)
+	</insert>
+	
+	<select id="getQnaAskByNo" resultClass="QnaAsk" parameterClass="int">
+		select qna_no as qnaNo,
+			   qna_ask_title as qnaAskTitle,
+			   qna_ask_contents as qnaAskContents,
+			   qna_ask_date as qnaAskDate
+		from qna_ask
+		where qna_no = #value#
+	</select>
+	
+	<update id="updateQnaAskByNo" parameterClass="QnaAsk">
+		update qna_ask
+		set
+			qna_ask_title = #qnaAskTitle#,
+			qna_ask_contents = #qnaAskContents#
+		where qna_no = #qnaNo#
+	</update>
+	
+	<select id="getQnaAskByCustNo" parameterClass="int" resultClass="QnaAsk">
+		select A.qna_no as qnaNo,
+				A.qna_ask_title as qnaAskTitle,
+				A.qna_ask_contents as qnaAskContents,
+				A.qna_ask_date as qnaAskDate
+		from qna q, qna_ask a
+		where q.qna_no = A.qna_no
+		and q.customer_no = #value#
+	</select>
+	
+	<select id="getQnaAskByCustNoNotRead" parameterClass="int" resultClass="QnaAsk">
+		select A.qna_no as qnaNo,
+				A.qna_ask_title as qnaAskTitle,
+				A.qna_ask_contents as qnaAskContents,
+				A.qna_ask_date as qnaAskDate
+		from qna q, qna_ask a
+		where q.qna_no = A.qna_no
+		and q.customer_no = #value#
+		and q.read = 'N'
+	</select>
+	
+</sqlMap>

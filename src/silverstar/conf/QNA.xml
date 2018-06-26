@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="QNA">
+
+	<typeAlias alias="QnA" type="silverstar.qna.QnA"/>
+	
+	<insert id="insertQnA" parameterClass="QnA">
+		insert into qna (qna_no, customer_no, qna_title, qna_contents, qna_date)
+		values (qna_seq.nextval, #customerNo#, #qnaTitle#, #qnaContents#, sysdate)
+	</insert>
+	
+	<select id="getAllQnAs" resultClass="QnA">
+		select qna_no as qnaNo,
+			   customer_no as customerNo,
+			   qna_title as qnaTitle,
+			   qna_contents as qnaContents,
+			   qna_date as qnaDate
+		from qna
+	</select>
+	
+	<select id="getQnAsByRangeByCustNo" resultClass="QnA" parameterClass="hashmap">
+		select qnaNo, customerNo, qnaTitle, qnaContents, qnaDate
+		from (select row_number() over(order by qna_no desc) rn,
+			   		 qna_no as qnaNo,
+			   		 customer_no as customerNo,
+			   		 qna_title as qnaTitle,
+			   		 qna_contents as qnaContents,
+			   		 qna_date as qnaDate
+			  from qna
+			  where customer_no = #customerNo#)
+		where rn >= #beginIndex# 
+		and rn &lt;= #endIndex#
+	</select>
+	
+	<select id="getQnAsByRange" resultClass="QnA" parameterClass="hashmap">
+		select qnaNo, customerNo, qnaTitle, qnaContents, qnaDate
+		from (select row_number() over(order by qna_no desc) rn,
+			   		 qna_no as qnaNo,
+			   		 customer_no as customerNo,
+			   		 qna_title as qnaTitle,
+			   		 qna_contents as qnaContents,
+			   		 qna_date as qnaDate
+			  from qna)
+		where rn >= #beginIndex# 
+		and rn &lt;= #endIndex#
+	</select>
+	
+	<select id="getAllCountsQnA" resultClass="int">
+		select count(*)
+		from qna
+	</select>
+	
+	<select id="getAllCountsQnAByCust" resultClass="int" parameterClass="int">
+		select count(*)
+		from qna
+		where customer_no = #value#
+	</select>
+	
+	
+	<select id="getQnAByNo" resultClass="QnA" parameterClass="int">
+		select qna_no as qnaNo,
+			   customer_no as customerNo,
+			   qna_title as qnaTitle,
+			   qna_contents as qnaContents,
+			   qna_date as qnaDate
+		from qna
+		where qna_no = #value#
+	</select>
+	
+	<update id="updateQnA" parameterClass="hashmap">
+		update qna
+		set
+			qna_title = #qnaTitle#,
+			qna_contents = #qnaContents#
+		where
+			qna_no = #qnaNo#
+	</update>
+	
+	<delete id="deleteQnA" parameterClass="int">
+		delete from qna
+		where qna_no = #qnaNo#
+	</delete>
+	
+	<select id="getQnAByCustNo" resultClass="QnA" parameterClass="int">
+		select qna_no as qnaNo,
+			   customer_no as customerNo,
+			   qna_title as qnaTitle,
+			   qna_contents as qnaContents,
+			   qna_date as qnaDate
+		from qna
+		where customer_no = #value#
+	</select>
+	
+	<update id="notReadQna" parameterClass="int">
+		update qna
+		set 
+			read = 'N'
+		where qna_no = #value#
+	</update>
+	
+	<update id="readQna" parameterClass="int">
+		update qna
+		set 
+			read = 'Y'
+		where qna_no = #value#
+	</update>
+	
+	<select id="countNotReadAnswer" parameterClass="int" resultClass="int">
+		select count(*)
+		from qna
+		where customer_no = #value#
+		and read = 'N'
+	</select>
+	<select id="getAnsweredQnaByCustNo" parameterClass="int" resultClass="QnA">
+		select qna_no as qnaNo,
+			   customer_no as customerNo,
+			   qna_title as qnaTitle,
+			   qna_contents as qnaContents,
+			   qna_date as qnaDate
+		from qna
+		where customer_no = #value#
+		and read = 'N'
+	</select>
+	
+</sqlMap>

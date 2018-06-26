@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="customer">
+	<!-- ibatis에서 미리 정의해둔 typeAlias -->
+	<typeAlias alias = "Customer" type="silverstar.customer.Customer"/>
+	<typeAlias alias = "CustomerGrade" type="silverstar.customer.CustomerGrade"/>
+
+	<select id="getAllCustomer" resultClass="Customer">
+		select
+			customer_no as customerNo,
+			customer_id as customerId,
+			customer_pw as customerPw,
+			customer_name as customerName,
+			customer_email as customerEmail,
+			gender as gender,
+			customer_tel as customerTel,
+			customer_address as customerAddress,
+			customer_birth as customerBirth,
+			customer_point as customerPoint,
+			customer_status as customerStatus,
+			total_pay as totalPay,
+			admin
+		from customer
+		where admin = 'N'
+		order by customer_no desc
+	</select>
+	
+	<select id="getCustomerById" parameterClass="string" resultClass="Customer">
+		select
+			customer_no as customerNo,
+			customer_id as customerId,
+			customer_pw as customerPw,
+			customer_name as customerName,
+			customer_email as customerEmail,
+			gender as gender,
+			customer_tel as customerTel,
+			customer_address as customerAddress,
+			customer_birth as customerBirth,
+			customer_point as customerPoint,
+			customer_status as customerStatus,
+			total_pay as totalPay,
+			admin
+		from customer
+		where customer_id = #value#
+		and admin = 'N'
+	</select>
+	
+	<insert id="insertCustomer" parameterClass="Customer">
+		insert into customer (customer_no, customer_id, customer_pw, customer_name, customer_email, gender, customer_tel, customer_address, customer_birth , customer_point)  
+		values (cust_seq.nextval, #customerId#, #customerPw#, #customerName#, #customerEmail#, #gender#, #customerTel#, #customerAddress#, #customerBirth#, 2000)
+	</insert>
+	
+	<select id="getCustomerByNo" parameterClass="int" resultClass="Customer">
+		select
+			customer_no as customerNo,
+			customer_id as customerId,
+			customer_pw as customerPw,
+			customer_name as customerName,
+			customer_email as customerEmail,
+			gender as gender,
+			customer_tel as customerTel,
+			customer_address as customerAddress,
+			customer_birth as customerBirth,
+			customer_point as customerPoint,
+			customer_status as customerStatus,
+			total_pay as totalPay,
+			admin
+		from customer
+		where customer_no = #value#
+		and admin = 'N'
+	</select>
+
+	<select id="getCustomerGrade" parameterClass="string" resultClass="CustomerGrade">
+		select
+			customer_grade as customerGrade,
+			grade_image as image,
+			point_rate as pointRate
+		from grade
+		where customer_grade = #value#
+	</select>
+	
+	<update id="updateCustomer" parameterClass="Customer">
+		update customer
+		set
+			customer_tel = #customerTel#,
+			customer_email = #customerEmail#,
+			customer_pw = #customerPw#,
+			customer_address = #customerAddress#
+		where
+			customer_id = #customerId#
+		and admin = 'N'
+	</update>
+	
+	<select id="getAllCountsCustomer" resultClass="int">
+		select count(*)
+		from customer
+		where admin = 'N'
+	</select>
+	
+	<select id="getCustomersByRange" resultClass="Customer" parameterClass="hashmap">
+		select customerNo, customerId, customerPw, customerName, customerEmail, gender, customerTel, customerAddress, customerBirth, customerPoint, customerStatus, totalPay 
+		from (select row_number() over(order by customer_no desc) rn,
+					 customer_no as customerNo,
+					 customer_id as customerId,
+					 customer_pw as customerPw,
+					 customer_name as customerName,
+					 customer_email as customerEmail,
+					 gender as gender,
+					 customer_tel as customerTel,
+					 customer_address as customerAddress,
+					 customer_birth as customerBirth,
+					 customer_point as customerPoint,
+					 customer_status as customerStatus,
+					 total_pay as totalPay,
+					 admin
+					 from customer
+					 where admin = 'N')
+		where rn >= #beginIndex# 
+		and rn &lt;= #endIndex#
+	</select>
+	
+	<update id="deleteCustomer" parameterClass="int">
+		update customer
+		set
+			customer_status = 'N'
+		where
+			customer_no = #value#
+		and admin = 'N'
+	</update>
+	
+	<update id="canacelDeleteCustomer" parameterClass="int">
+		update customer
+		set
+			customer_status = 'Y'
+		where
+			customer_no = #value#
+		and admin = 'N'
+	</update>
+	
+	<select id="getAdminById" parameterClass="string" resultClass="Customer">
+		select
+			customer_no as customerNo,
+			customer_id as customerId,
+			customer_pw as customerPw,
+			customer_name as customerName,
+			customer_email as customerEmail,
+			gender as gender,
+			customer_tel as customerTel,
+			customer_address as customerAddress,
+			customer_birth as customerBirth,
+			customer_point as customerPoint,
+			customer_status as customerStatus,
+			total_pay as totalPay,
+			admin
+		from customer
+		where customer_id = #value#
+		and admin = 'Y'
+	</select>
+	
+	<update id="deleteCustomerByNo" parameterClass="int">
+		update customer
+		set customer_status = 'N'
+		where customer_no = #value#
+	</update>
+</sqlMap>
+

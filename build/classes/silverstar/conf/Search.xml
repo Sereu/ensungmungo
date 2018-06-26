@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Search">
+	<typeAlias alias="Book" type="silverstar.bookstore.Book"/>
+	
+  	<select id="famousBooklists" resultClass="Book">
+  		select A.rn, A.sellqty sellqty, A.book_no no,B.book_title title 
+			from (select sum(ORDER_QUANTITY) sellqty, ROW_NUMBER() over (order by sum(ORDER_QUANTITY) desc) rn, book_no 
+				from book_order group by book_no) A, book B 
+			where A.book_no = B.book_no and 10 >= A.rn order by A.rn
+  	</select>  
+   	<select id="famousCategorylists" parameterClass="string" resultClass="Book">
+  		select sellqty, no, title, rn, image
+		from (select A.sellqty sellqty, B.book_no no, B.book_title title,B.book_image image, B.MAIN_CARTEGORY, ROW_NUMBER() over (order by sellqty desc) rn from 
+				(select sum(ORDER_QUANTITY) sellqty, book_no from book_order group by book_no) A, book B 
+			where B.main_cartegory =#value# and A.book_no = B.BOOK_NO)
+		where 5 > rn order by rn
+
+  	</select> 
+  	 
+  	<select id="newCategorylists" parameterClass="string" resultClass="Book">
+	  	select 
+	  		book_no no,
+	  		book_title title,
+	  		book_image image,
+	  		book_introduce introduce,
+	  		book_author author
+	  	from (select * from book where main_cartegory = #value#
+	  			order by publish_date desc)
+	  	where ROWNUM &lt;= 4 order by ROWNUM
+	</select>
+  
+  	<select id="countBookByTitle" parameterClass="String" resultClass="int">
+  		select count(*) as cnt from BOOK where book_title like '%' || #keyword# || '%'
+  	</select>
+   	<select id="countBookByAuthor" parameterClass="String" resultClass="int">
+  		select count(*) as cnt from BOOK where book_author like '%' || #keyword# || '%'
+  	</select>
+  	<select id="countBookByPublisher" parameterClass="String" resultClass="int">
+  		select count(*) as cnt from BOOK where book_publisher like '%' || #keyword# || '%'
+  	</select>
+  	
+  	<select id="getBookByTitle" parameterClass="map" resultClass="Book">
+  		select no, title, author, publisher, mainCartegory, subCartegory,
+  		fixedPrice, discountRate, stock, publishDate, image, introduce, detailImage, outStatus
+		from (select row_number() over (order by book_no desc) as rn,
+			book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus
+			from BOOK 
+			where book_title like '%'||#keyword#||'%')
+  		where rn >= #beginIndex# and rn &lt;= #endIndex#
+  	</select>  
+  	
+  	<select id="getBookByAuthor" parameterClass="map" resultClass="Book">
+		select no, title, author, publisher, mainCartegory, subCartegory,
+  		fixedPrice, discountRate, stock, publishDate, image, introduce, detailImage, outStatus
+		from (select row_number() over (order by book_no desc) as rn,
+			book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus
+			from BOOK 
+			where book_author like '%'||#keyword#||'%')
+  		where rn >= #beginIndex# and rn &lt;= #endIndex#
+  	</select>  
+  	
+  	<select id="getBookByPublisher" parameterClass="map" resultClass="Book">
+  		select no, title, author, publisher, mainCartegory, subCartegory,
+  		fixedPrice, discountRate, stock, publishDate, image, introduce, detailImage, outStatus
+		from (select row_number() over (order by book_no desc) as rn,
+			book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus
+			from BOOK 
+			where book_publisher like '%'||#keyword#||'%')
+  		where rn >= #beginIndex# and rn &lt;= #endIndex#
+  	</select>
+</sqlMap>

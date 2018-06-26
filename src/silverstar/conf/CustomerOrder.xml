@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="CustomerOrder">
+	<typeAlias alias = "CustomerOrder" type="silverstar.order.CustomerOrder"/>
+	<typeAlias alias = "MyOrder" type="silverstar.order.MyOrder"/>
+	<typeAlias alias = "OrderNoBook" type="silverstar.order.OrderNoBook"/>
+	<typeAlias alias = "SearchMyorder" type="silverstar.order.SearchMyorder"/>
+	
+	<select id="seq" resultClass="int">
+		select test_seq.nextval from dual
+	</select>
+	<insert id="addCustomerOrder" parameterClass="CustomerOrder">
+		insert into Customer_order values (#orderNo#,#customerNo#,sysdate,#point#,#price#,#addpoint#)
+	</insert>
+	
+	<!-- 고객번호로 주문조회 -->
+	<select id="getCustorderByCustNo" parameterClass="int" resultClass="CustomerOrder">
+		select
+			order_no as orderNo,
+			customer_no as customerNo,
+			order_date as orderDate
+		from customer_order
+		where customer_no = #value#
+	</select>
+	
+	<!-- 고객번호로 기간 주문내역 조회 -->
+	<select id="getOrderlistByMonth" parameterClass="hashmap" resultClass="MyOrder">
+		SELECT 
+			c.order_no as orderNo,
+			c.customer_no as custNo,
+			c.order_date as orderDate,
+			c.usepoint as point,
+			c.price as price,
+			B.QTY as qty, 
+			(SELECT COUNT(*) FROM  BOOK_ORDER O WHERE O.ORDER_NO = c.ORDER_NO AND O.ORDER_STATUS = 'N') as cnt 
+		FROM CUSTOMER_ORDER C, (SELECT ORDER_NO, SUM(ORDER_QUANTITY) AS QTY
+                                      FROM BOOK_ORDER
+                                      GROUP BY ORDER_NO) B
+		WHERE C.ORDER_NO = B.ORDER_NO
+		AND C.CUSTOMER_NO = #custNo#
+		AND c.order_date >= (SYSDATE-#searchDate#)
+		AND c.order_date &lt;= SYSDATE
+		order by C.ORDER_DATE DESC
+	</select>
+	
+	<select id="getRecentAddress" parameterClass="int" resultClass="string">
+	select RECENT_SHIPPING_ADDRESS  
+	from SHIPPING_ADDRESS 
+	where order_no = (select max(A.ORDER_NO) from SHIPPING_ADDRESS A, customer_order B where B.customer_no = #value# and B.ORDER_NO = A.ORDER_NO)
+	</select>
+	
+	<!-- 고객번호 기간별 주문조회 -->
+	<select id="getCustByDate" parameterClass="hashmap" resultClass="SearchMyorder">
+		SELECT orderNo, bookNo, title, mainCartegory, subCartergory, price, discount, image, orderStatus, orderDate, QTY  
+		FROM (SELECT 
+					row_number() over(order by O.ORDER_NO desc) RN,
+					O.ORDER_NO as orderNo, 
+					B.BOOK_NO as bookNo, 
+					B.BOOK_TITLE as title,  
+					B.MAIN_CARTEGORY as mainCartegory, 
+					B.SUB_CATEGORY as subCartergory, 
+					B.FIXED_PRICE as price, 
+					B.DISCOUNT_RATE as discount, 
+					B.BOOK_IMAGE as image,
+					O.ORDER_STATUS as orderStatus,
+					C.ORDER_DATE as orderDate,
+					O.ORDER_QUANTITY AS QTY
+				FROM BOOK B, BOOK_ORDER O, CUSTOMER_ORDER C
+				WHERE B.BOOK_NO = O.BOOK_NO
+				AND O.ORDER_NO = C.ORDER_NO
+				AND O.ORDER_NO IN (select order_no
+											from customer_order
+											WHERE CUSTOMER_NO = #custNo#
+											AND ORDER_DATE >= TO_DATE(#beginDate#,'yyyy-mm-dd')
+											and order_date &lt;= TO_DATE(#endDate#,'yyyy-mm-dd') +1)
+				AND B.BOOK_TITLE like '%' || #bookName# || '%')
+		WHERE RN >= #beginIndex#
+		AND RN &lt;= #endIndex#
+	</select>
+	
+	<!-- 구매내역 총 페이지  -->
+	<select id="getMyorderCnt" parameterClass="hashmap" resultClass="int">
+	SELECT count(*)
+	FROM BOOK B, BOOK_ORDER O, CUSTOMER_ORDER C
+	WHERE B.BOOK_NO = O.BOOK_NO
+	AND O.ORDER_NO = C.ORDER_NO
+	AND O.ORDER_NO IN (select order_no
+								from customer_order
+								WHERE CUSTOMER_NO = #custNo#
+								AND ORDER_DATE >= TO_DATE(#fromIndex#,'yyyy-mm-dd')
+								and order_date &lt;= TO_DATE(#endIndex#,'yyyy-mm-dd') +1)
+	AND B.BOOK_TITLE like '%' || #bookName# || '%'
+	ORDER BY O.ORDER_NO DESC
+	</select>
+	
+	<!-- 최근 1개월 구매 총 수 -->
+	<select id="getOneMonthOrders" parameterClass="int" resultClass="int">
+	SELECT COUNT(*)
+	FROM CUSTOMER_ORDER
+	WHERE CUSTOMER_NO = #custNo#
+	AND ORDER_DATE >= SYSDATE-30
+	AND ORDER_DATE &lt;= SYSDATE
+	</select>
+	
+	<select id="getOneMonthRange" parameterClass="hashmap" resultClass="MyOrder">
+		SELECT orderNo, custNo, orderDate, point, price, qty, cnt
+		FROM (SELECT
+					row_number() over(order by C.ORDER_NO desc) RN,
+					c.order_no as orderNo,
+					c.customer_no as custNo,
+					c.order_date as orderDate,
+					c.usepoint as point,
+					c.price as price,
+					B.QTY as qty, 
+					(SELECT COUNT(*) FROM  BOOK_ORDER O WHERE O.ORDER_NO = c.ORDER_NO AND O.ORDER_STATUS = 'N') as cnt 
+				FROM CUSTOMER_ORDER C, (SELECT ORDER_NO, SUM(ORDER_QUANTITY) AS QTY
+				                                      FROM BOOK_ORDER
+				                                      GROUP BY ORDER_NO) B
+				WHERE C.ORDER_NO = B.ORDER_NO
+				AND C.CUSTOMER_NO = #custNo#
+				AND c.order_date >= (SYSDATE-30)
+				AND c.order_date &lt;= SYSDATE)
+		WHERE RN >= #beginIndex#
+		AND RN &lt;= #endIndex#
+	</select>
+	
+</sqlMap>

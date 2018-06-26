@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMapConfig      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+  <!-- Configure a built-in transaction manager.  If you're using an 
+       app server, you probably want to use its transaction manager 
+       and a managed datasource -->
+  <transactionManager type="JDBC" commitRequired="false">
+    <dataSource type="SIMPLE">
+      <property name="JDBC.Driver" value="oracle.jdbc.OracleDriver"/>
+      <property name="JDBC.ConnectionURL" value="jdbc:oracle:thin:@192.168.10.252:1521:xe"/>
+      <property name="JDBC.Username" value="team1"/>
+      <property name="JDBC.Password" value="zxcv1234"/>
+    </dataSource>
+  </transactionManager>
+
+  <sqlMap resource="silverstar/conf/Book.xml"/>
+  <sqlMap resource="silverstar/conf/BookOrder.xml"/>
+  <sqlMap resource="silverstar/conf/Cart.xml"/>
+  <sqlMap resource="silverstar/conf/Customer.xml"/>
+  <sqlMap resource="silverstar/conf/CustomerOrder.xml"/>
+  <sqlMap resource="silverstar/conf/Grade.xml"/>
+  <sqlMap resource="silverstar/conf/OrderPayment.xml"/>
+  <sqlMap resource="silverstar/conf/QNA.xml"/>
+  <sqlMap resource="silverstar/conf/QNAASK.xml"/>
+  <sqlMap resource="silverstar/conf/Review.xml"/>
+  <sqlMap resource="silverstar/conf/ShippingAddress.xml"/>
+  <sqlMap resource="silverstar/conf/Search.xml"/>
+  <sqlMap resource="silverstar/conf/Statistics.xml"/>
+  
+</sqlMapConfig>

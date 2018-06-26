@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BookOrder">
+<typeAlias alias = "BookOrder" type="silverstar.order.BookOrder"/>
+<typeAlias alias = "OrderDetail" type="silverstar.order.OrderDetail"/>
+<insert id="addBookOrder" parameterClass="BookOrder">
+	insert into book_order values (#orderNo#,#bookNo#,#orderQuantity#,'Y')
+</insert>
+<update id="reduceBook" parameterClass="map">
+	update book
+	set book_stock = book_stock - #count#
+	where book_no = #no#
+</update>
+<update id="addPoint" parameterClass="map">
+	update customer
+	set customer_point = #point#
+	where customer_no = #no#
+</update>
+
+<update id="addPrice" parameterClass="map">
+	update customer
+	set total_pay = total_pay + #price#
+	where customer_no = #no#
+</update>
+<delete id="deleteCart" parameterClass="int">
+	delete from cart where customer_no=#no# and BOOK_NO in (select book_no from book where book_out_status = 'N')
+</delete>
+<delete id="deleteCartpart" parameterClass="map">
+	delete from cart where customer_no = #customerno# and BOOK_NO = #bookno#
+</delete>
+
+
+<update id="cancelOrder" parameterClass="int">
+	update book_order
+	set order_status = 'N'
+	where order_no = #value#
+</update>
+<update id="cancelBookStock" parameterClass="map">
+	update book
+	set book_stock = book_stock + (select order_quantity from book_order where order_no = #orderNo# and BOOK_NO = #bookNo#)
+	where book_no = (select book_no from book_order where order_no = #orderNo# and BOOK_NO = #bookNo#)
+</update>
+<update id="cancelCustomerOrder" parameterClass="map">
+	update CUSTOMER
+	set TOTAL_PAY = TOTAL_PAY - #price#, customer_point = #customerpoint#
+	where CUSTOMER_NO = (select CUSTOMER_NO from CUSTOMER_ORDER where ORDER_NO = #orderno#)
+</update>
+<select id="getOrderBook" parameterClass="int" resultClass="BookOrder">
+	select 
+		book_no bookNo,
+		order_quantity orderQuantity,
+		order_status status
+	from book_order
+	where order_no = #value#
+</select>
+<select id="getOrderDetail" parameterClass="int" resultClass="Orderdetail">
+	select
+		 A.order_no orderno,
+		 B.payment payment,
+		 C.recent_shipping_address address,
+		 A.usepoint point,
+		 A.addpoint cancelpoint,
+		 A.price price
+	from Customer_order A, Order_payment B, Shipping_address C
+	where A.order_no = B.order_no and B.order_no = C.order_no and A.order_no = #value#
+</select>
+</sqlMap>

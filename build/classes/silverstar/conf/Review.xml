@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Review">
+<typeAlias alias = "Review" type="silverstar.review.Review"/>
+<typeAlias alias = "ReviewCustomer" type="silverstar.review.ReviewCustomer"/>
+<typeAlias alias = "ReviewLike" type="silverstar.review.ReviewLike"/>
+
+<select id="getReviewBno" parameterClass="int" resultClass="ReviewCustomer">
+	SELECT
+		R.REVIEW_NO as reviewNo,
+		R.BOOK_NO as bookNo,
+		R.CUSTOMER_NO as customerNo,
+		R.REVIEW_STAR as star,
+		R.REVIEW_DATE as reviewDate,
+		R.REVIEW_CONTENTS as contents,
+		C.CUSTOMER_ID as custId
+	FROM REVIEW R, CUSTOMER C
+	WHERE R.CUSTOMER_NO = C.CUSTOMER_NO
+	AND R.BOOK_NO = #value#
+	ORDER BY REVIEW_NO DESC
+</select>
+
+<insert id="insertReview" parameterClass="Review">
+	insert into review(
+		review_no, 
+		book_no,
+		customer_no, 
+		review_star,
+		review_contents)
+	values(
+		review_seq.nextval, 
+		#bookNo#,
+		#customerNo#,
+		#star#,
+		#contents#)
+</insert>
+
+<select id="getReviewStarBno" parameterClass="int" resultClass="ReviewLike">
+	SELECT 
+		REVIEW_STAR as startLike, 
+		COUNT(*) as startCnt,
+		REVIEW_STAR*COUNT(*) as starScore
+	FROM REVIEW
+	WHERE BOOK_NO = #value#
+	GROUP BY REVIEW_STAR
+	ORDER BY REVIEW_STAR asc
+</select>
+
+<select id="getReviewCnt" parameterClass="int" resultClass="int">
+	SELECT count(*)
+	FROM REVIEW
+	where BOOK_NO = #value#
+</select>
+<!-- 리뷰 총 레코드 불러오기 -->
+<select id="getReviewCustNo" parameterClass="int" resultClass="int">
+	SELECT count(*)
+	FROM REVIEW
+	where customer_NO = #value#
+</select>
+<!-- 리뷰 row별 불러오기 
+<select id="getReviewRange" parameterClass="hashmap" resultClass="ReviewCustomer">
+	SELECT reviewNo, bookNo, customerNo, star, reviewDate, contents, custId
+	FROM (SELECT 
+			row_number() over(order by R.REVIEW_NO desc) rn,
+			R.REVIEW_NO as reviewNo,
+			R.BOOK_NO as bookNo,
+			R.CUSTOMER_NO as customerNo,
+			R.REVIEW_STAR as star,
+			R.REVIEW_DATE as reviewDate,
+			R.REVIEW_CONTENTS as contents,
+			C.CUSTOMER_ID as custId
+			FROM REVIEW R, CUSTOMER C
+			WHERE R.CUSTOMER_NO = C.CUSTOMER_NO
+			and R.BOOK_NO = #bookNo#)
+	where rn >=#beginIndex# and rn &lt;=#endIndex#
+</select>
+-->
+<select id="getReviewRange" parameterClass="map" resultClass="ReviewCustomer">
+	SELECT reviewNo, bookNo, customerNo, star, reviewDate, contents, custId
+	FROM (SELECT 
+			row_number() over(order by $col$ $sort$) rn,
+			R.REVIEW_NO as reviewNo,
+			R.BOOK_NO as bookNo,
+			R.CUSTOMER_NO as customerNo,
+			R.REVIEW_STAR as star,
+			R.REVIEW_DATE as reviewDate,
+			R.REVIEW_CONTENTS as contents,
+			C.CUSTOMER_ID as custId
+		FROM REVIEW R, CUSTOMER C		
+		WHERE R.CUSTOMER_NO = C.CUSTOMER_NO
+			and R.BOOK_NO = #bookNo#)
+	where rn >=#beginIndex# and rn &lt;=#endIndex#
+</select>
+<select id="getReviewRangeByCustNo" parameterClass="hashmap" resultClass="ReviewCustomer">
+	SELECT reviewNo, bookNo, customerNo, star, reviewDate, contents, custId
+	FROM (SELECT 
+			row_number() over(order by R.REVIEW_NO desc) rn,
+			R.REVIEW_NO as reviewNo,
+			R.BOOK_NO as bookNo,
+			R.CUSTOMER_NO as customerNo,
+			R.REVIEW_STAR as star,
+			R.REVIEW_DATE as reviewDate,
+			R.REVIEW_CONTENTS as contents,
+			C.CUSTOMER_ID as custId
+			FROM REVIEW R, CUSTOMER C
+			WHERE R.CUSTOMER_NO = C.CUSTOMER_NO
+			and R.customer_NO = #custNo#)
+	where rn >=#beginIndex# and rn &lt;=#endIndex#
+</select>
+
+<delete id="delReview" parameterClass="int">
+	DELETE REVIEW
+	WHERE review_no = #value#
+</delete>
+
+<select id="getAllReviewCnt" resultClass="int">
+	SELECT count(*)
+	FROM REVIEW
+</select>
+
+<select id="getAllReviewRange" parameterClass="hashmap" resultClass="ReviewCustomer">
+	SELECT reviewNo, bookNo, customerNo, star, reviewDate, contents, custId
+	FROM (SELECT 
+			row_number() over(order by R.REVIEW_NO desc) rn,
+			R.REVIEW_NO as reviewNo,
+			R.BOOK_NO as bookNo,
+			R.CUSTOMER_NO as customerNo,
+			R.REVIEW_STAR as star,
+			R.REVIEW_DATE as reviewDate,
+			R.REVIEW_CONTENTS as contents,
+			C.CUSTOMER_ID as custId
+			FROM REVIEW R, CUSTOMER C
+			WHERE R.CUSTOMER_NO = C.CUSTOMER_NO)
+	where rn >=#beginIndex# and rn &lt;=#endIndex#
+</select>
+
+<!-- 책별 고객 리뷰 등록여부 -->
+<select id="getBookByCustomerNo" parameterClass="hashmap" resultClass="int">
+	select count(*)
+	from review
+	where book_no = #bookNo#
+	and customer_no = #custNo#
+</select>
+<select id="getReviewByBookNo" parameterClass="int" resultClass="int">
+	select count(*)
+	from review
+	where book_no = #bookNo#
+</select>
+
+<update id="addreviewlike" parameterClass="int">
+	update review
+	set
+		likes = likes + 1
+	where review_no = #value#
+</update>
+<!-- 좋아요 개수 구하기 -->
+<select id="likecount" parameterClass="int" resultClass="int">
+	select likes
+	from review
+	where review_no = #value#
+</select>
+<!-- 고객이 등록한 리뷰 알아내기  -->
+<select id="custReviewNo" parameterClass="hashmap" resultClass="int">
+	SELECT CUSTOMER_NO
+	FROM REVIEW
+	WHERE REVIEW_NO = #reviewNo#
+	AND CUSTOMER_NO = #custNo#
+</select>
+<select id="getAvgStarByBookNo" parameterClass="int" resultClass="int">
+	select nvl (trunc(sum(review_star)/count(*),1),0)
+	from review
+	where book_no = #value#
+</select>
+<select id="avgStarByBookNo" parameterClass="int" resultClass="double">
+	select trunc(avg(review_star),1)
+	from review 
+	where book_no=#value#
+</select>
+</sqlMap>

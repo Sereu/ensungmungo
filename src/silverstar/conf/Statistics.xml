@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BookOrder">
+
+	<select id="getSellingPrice" parameterClass="int" resultClass="int">
+		select nvl (sum(price - price*(discount/100)), 0)
+		from (SELECT 
+					O.ORDER_NO as orderNo,
+					B.BOOK_NO as bookNo,
+					B.BOOK_TITLE as title,
+					B.MAIN_CARTEGORY as mainCartegory,
+					B.SUB_CATEGORY as subCartergory,
+					B.FIXED_PRICE as price,
+					B.DISCOUNT_RATE as discount, 
+					B.BOOK_IMAGE as image,
+					O.ORDER_STATUS as orderStatus,
+					C.ORDER_DATE as orderDate,
+					O.ORDER_QUANTITY AS QTY
+					FROM BOOK B, BOOK_ORDER O, CUSTOMER_ORDER C
+					WHERE B.BOOK_NO = O.BOOK_NO
+					AND O.ORDER_NO = C.ORDER_NO
+					AND O.ORDER_NO IN (select order_no
+										from customer_order
+										WHERE TO_DATE(order_date,'yyyy-mm-dd') = TO_DATE(sysdate,'yyyy-mm-dd')-#value#))
+	</select>
+	
+	<select id="getSellingQty" parameterClass="int" resultClass="int">
+		select nvl(sum(qty),0)
+		from (SELECT 
+					O.ORDER_NO as orderNo,
+					B.BOOK_NO as bookNo,
+					B.BOOK_TITLE as title,
+					B.MAIN_CARTEGORY as mainCartegory,
+					B.SUB_CATEGORY as subCartergory,
+					B.FIXED_PRICE as price,
+					B.DISCOUNT_RATE as discount, 
+					B.BOOK_IMAGE as image,
+					O.ORDER_STATUS as orderStatus,
+					C.ORDER_DATE as orderDate,
+					O.ORDER_QUANTITY AS QTY
+				FROM BOOK B, BOOK_ORDER O, CUSTOMER_ORDER C
+				WHERE B.BOOK_NO = O.BOOK_NO
+				AND O.ORDER_NO = C.ORDER_NO
+				AND O.ORDER_NO IN (select order_no
+									from customer_order
+									WHERE TO_DATE(order_date,'yyyy-mm-dd') = TO_DATE(sysdate,'yyyy-mm-dd')-#value#))
+	</select>
+	
+	<select id="getPopularBookNoByGender" resultClass="int" parameterClass="string">
+		select book_no
+		from(select count(*) cnt, book_no, ROW_NUMBER() over (order by count(*) desc) rn
+				from (select O.order_no, O.customer_no
+						from customer_order O,customer C
+						where C.customer_no = O.customer_no
+						and C.gender = #value#) G, book_order B
+				where G.order_no = B.order_no
+				group by book_no)
+		where rn = 1
+	</select>
+	<select id="getRowStockBook" resultClass="silverstar.bookstore.Book">
+		select no, stock, title, image
+		from(select  ROW_NUMBER() over (order by book_stock) rn, book_stock stock, book_no no, book_title title, book_image image
+			 from book
+			 where book_out_status = 'N')
+		where rn &lt;=5
+	</select>
+	
+	<select id="getStatusByGender" parameterClass="map" resultClass="silverstar.bookstore.Book">
+		select sellqty, rn, no from (select sum(ORDER_QUANTITY) sellqty, ROW_NUMBER() over (order by sum(ORDER_QUANTITY) desc) rn, A.book_no no from book_order A, customer_order B, CUSTOMER C where B.ORDER_NO= A.ORDER_NO and B.CUSTOMER_NO= C.CUSTOMER_NO and C.GENDER=#S# group by book_no) where rn=(#rn# + 1)
+	</select>
+	
+	<select id="getStatusByAge" parameterClass="int" resultClass="int">
+	select sum(ORDER_QUANTITY) cn
+	from book_order B, customer_order C, customer D where B.ORDER_NO = C.ORDER_NO and C.CUSTOMER_NO = D.CUSTOMER_NO and To_char(D.CUSTOMER_BIRTH,'yyyy') > To_char(sysdate,'yyyy') - (#value# * 10 + 20) and  To_char(D.CUSTOMER_BIRTH,'yyyy') &lt;= To_char(sysdate,'yyyy') - (#value# * 10 + 10)
+
+	</select>
+	<select id="getStatusByBook" parameterClass="int" resultClass="silverstar.bookstore.Book">
+		select rn, sellqty sellqty, book_no no from (select sum(ORDER_QUANTITY) sellqty, ROW_NUMBER() over (order by sum(ORDER_QUANTITY) desc) rn, book_no from book_order group by book_no) where rn=#value#
+	</select>
+	
+	<select id="getRankByBookNo" parameterClass="int" resultClass="double">
+		select rn
+		from(select row_number() over(order by cnt desc) rn, book_no
+				from (select count(*) cnt ,book_no
+						from book_order
+						group by book_no))
+		where book_no = #value#
+		union all
+		select 0 from dual
+		where not exists ( select rn
+							from(select row_number() over(order by cnt desc) rn, book_no
+									from (select count(*) cnt ,book_no
+											from book_order
+											group by book_no))
+							where book_no = #value#)
+	</select>
+	
+	<select id="getBookNoByCartegory" parameterClass="hashmap" resultClass="int">
+		select book_no
+		from (select row_number() over(order by cnt desc) rn, book_no
+				from (select count(*) cnt,O.book_no
+						from book_order O, book B
+						where O.book_no = B.book_no
+						and B.main_cartegory = #cartegory#
+						and B.book_no != #bookNo#
+						group by O.book_no
+						order by count(*)))
+		where rn &lt;=3
+	</select>
+</sqlMap>

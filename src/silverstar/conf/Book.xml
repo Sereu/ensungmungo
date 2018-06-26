@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Book">
+
+	<typeAlias alias="Book" type="silverstar.bookstore.Book"/> 
+  <select id="bookSearchDetailByNo" parameterClass="int" resultClass="Book">
+ 	select 
+ 		book_no		as no, 
+ 		book_title	as title, 
+ 		book_author	as author, 
+ 		book_publisher	as publisher, 
+ 		main_cartegory	as mainCartegory, 
+ 		sub_category	as subCartegory, 
+ 		fixed_price	as fixedPrice, 
+ 		discount_rate	as discountRate, 
+ 		book_stock	as stock, 
+ 		publish_date	as publishDate,
+ 		book_image	as image, 
+ 		book_introduce	as introduce, 
+ 		book_detail_image	as detailImage, 
+ 		book_out_status	as outStatus
+	from 
+		book 
+	where 
+		book_no = #value#
+  
+  </select>
+  
+  <select id="getAllBook" resultClass="Book">
+		select 
+			book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus
+		from 
+			BOOK
+	</select>
+	
+  
+  <select id="getAllBookOrderByTitleAsc" resultClass="Book">
+		select 
+			book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus
+		from 
+			BOOK
+		order by book_title asc
+	</select>
+	
+  	<select id="getAllBookOrderByTitleDesc" resultClass="Book">
+		select 
+			book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus
+		from 
+			BOOK
+		order by book_title desc
+	</select>
+	
+	
+	<insert id="insertBook" parameterClass="Book">
+	insert into 
+		BOOK(book_no, book_title, book_author, book_publisher, main_cartegory, 
+			sub_category, fixed_price, discount_rate, book_stock, publish_date, 
+			book_image, book_introduce, book_detail_image)	
+	values 
+		(book_seq.nextval,#title#,#author#,#publisher#,#mainCartegory#,
+		#subCartegory#,#fixedPrice#,#discountRate#,#stock#,#publishDate#,#image#,
+		#introduce#,#detailImage#)
+	</insert>
+	
+	
+	
+	<select id="getAllBooksCount" resultClass="int">
+		select count(*) as cnt from BOOK
+	</select>
+	
+	<select id="getBooksCount" parameterClass="string" resultClass="int">
+		select count(*) as cnt from BOOK where main_cartegory = #value#
+	</select>
+	
+	<select id="getAllBookByRange" parameterClass="map" resultClass="Book">
+  		select no, title, author, publisher, mainCartegory, subCartegory,
+  		fixedPrice, discountRate, stock, publishDate, image, introduce, detailImage, outStatus
+		from (select row_number() over (order by book_no desc) as rn,
+			book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus
+			from 
+				BOOK)
+		where rn >= #beginIndex# and rn &lt;= #endIndex#
+	</select>
+		
+	<select id="getBookByRangeWithCategory" parameterClass="map" resultClass="Book">
+  		select  no, title, author, publisher, mainCartegory, subCartegory,
+  		fixedPrice, discountRate, stock, publishDate, image, introduce, detailImage, outStatus
+		from (select row_number() over (order by book_no desc) as rn,
+			book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus
+			from 
+				BOOK
+			where MAIN_CARTEGORY = #cat#)
+		where rn >= #beginIndex# and rn &lt;= #endIndex#
+	</select>
+  
+  <update id="updateBookOutStatusByNo" parameterClass="int">
+  	update
+		book 
+	set 
+		book_out_status='Y'
+	where 
+		book_no=#value#
+  </update>
+
+  
+	<select id="getFamousBookSearch" parameterClass="map" resultClass="Book">
+  		select 
+			b.book_title title, 
+			no, 
+			cn, 
+ 			b.book_author	as author, 
+	 		b.book_publisher	as publisher, 
+	 		b.main_cartegory	as mainCartegory, 
+	 		b.sub_category	as subCartegory, 
+	 		b.fixed_price	as fixedPrice, 
+	 		b.discount_rate	as discountRate, 
+	 		b.book_stock	as stock, 
+	 		b.publish_date	as publishDate,
+	 		b.book_image	as image, 
+	 		b.book_introduce	as introduce, 
+	 		b.book_detail_image	as detailImage, 
+	 		b.book_out_status	as outStatus
+		from (select rn, no, cn 
+			from (	select row_number() over (order by cn desc) rn, no, cn 
+				from (	select count (*) cn, book_no no
+					from book_order group by book_no))
+			where rn >= #beginIndex# and rn &lt;= #endIndex#) a, book b 
+		where a.no = b.book_no order by cn desc
+	</select>  
+
+  <update id="updateBook" parameterClass="Book">
+  	update
+		book 
+	set 
+		book_title= #title#, 
+		book_author	= #author#, 
+ 		book_publisher = #publisher#, 
+ 		main_cartegory = #mainCartegory#, 
+ 		sub_category = #subCartegory#, 
+ 		fixed_price = #fixedPrice#, 
+ 		discount_rate = #discountRate#, 
+ 		book_stock = #stock#, 
+ 		publish_date = #publishDate#,
+ 		book_image = #image#, 
+ 		book_introduce = #introduce#, 
+ 		book_detail_image = #detailImage#, 
+ 		book_out_status	= #outStatus#
+	where 
+		book_no=#no#
+  </update>
+  
+  
+  <select id="getArrayBooks" parameterClass="map" resultClass="Book">
+		select  no, title, author, publisher, mainCartegory, subCartegory,
+  		fixedPrice, discountRate, stock, publishDate, image, introduce, detailImage, outStatus
+		from (
+			select book_no		as no, 
+ 			book_title	as title, 
+ 			book_author	as author, 
+	 		book_publisher	as publisher, 
+	 		main_cartegory	as mainCartegory, 
+	 		sub_category	as subCartegory, 
+	 		fixed_price	as fixedPrice, 
+	 		discount_rate	as discountRate, 
+	 		book_stock	as stock, 
+	 		publish_date	as publishDate,
+	 		book_image	as image, 
+	 		book_introduce	as introduce, 
+	 		book_detail_image	as detailImage, 
+	 		book_out_status	as outStatus,
+			row_number() over(order by $col$ $sort$) rn
+			from 
+				BOOK
+			<dynamic prepend="where">
+			<isNotNull prepend="AND" property="status">
+				book_out_status like #status#
+			</isNotNull>
+			<isNotEmpty prepend="AND" property="search">
+				$searchtag$ like '%'||#search#||'%'
+			</isNotEmpty>
+		</dynamic>
+		)
+		where rn >= #beginIndex# and rn &lt;= #endIndex#
+		
+	</select>
+  	<select id="getBooksStatusCount" parameterClass="map" resultClass="int">
+		select count(*) as cnt 
+		from BOOK
+		<dynamic prepend="where">
+			<isNotNull prepend="AND" property="status">
+				book_out_status like #status#
+			</isNotNull>
+			<isNotEmpty prepend="AND" property="search">
+				$searchtag$ like '%'||#search#||'%'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+</sqlMap>

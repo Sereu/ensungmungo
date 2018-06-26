@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Cart">
+
+	<typeAlias alias="Cart" type="silverstar.cart.Cart"/>
+
+	<insert id="insertCart" parameterClass="Cart">
+		insert into cart(cart_no,book_no,customer_no,book_quantity)
+		values
+			(cart_seq.nextval,#bookNo#,#custNo#,#bookQuantity#)
+	</insert>
+
+	<select id="searchCartByCustomerNo" parameterClass="int" resultClass="Cart">
+		select 
+			Cr.cart_no as no,
+			Cr.book_no as bookNo, 
+			Cr.customer_no as custNo,
+		 	Cr.book_quantity as bookQuantity, 
+		 	B.book_title as bookTitle, 
+		 	B.book_image as bookImage, 
+		 	B.fixed_price as fixedPrice, 
+		 	B.discount_rate as discountRate, 
+		 	B.book_stock as bookStock,
+		 	B.book_out_status as bookOutStatus
+		from 
+			cart Cr, book B
+		where 
+			Cr.customer_no=#value# 
+			and Cr.book_no = B.book_no	
+	</select>
+	<select id="searchCartByCustomerNoAndOutStatusY" parameterClass="int" resultClass="Cart">
+		select 
+			Cr.cart_no as no,
+			Cr.book_no as bookNo, 
+			Cr.customer_no as custNo,
+		 	Cr.book_quantity as bookQuantity, 
+		 	B.book_title as bookTitle, 
+		 	B.book_image as bookImage, 
+		 	B.fixed_price as fixedPrice, 
+		 	B.discount_rate as discountRate, 
+		 	B.book_stock as bookStock,
+		 	B.book_out_status as bookOutStatus
+		from 
+			cart Cr, book B
+		where 
+			Cr.customer_no=#value# 
+			and B.book_out_status like'Y'
+			and Cr.book_no = B.book_no	
+	</select>
+	<select id="searchCartByCustomerNoAndOutStatusN" parameterClass="int" resultClass="Cart">
+		select 
+			Cr.cart_no as no,
+			Cr.book_no as bookNo, 
+			Cr.customer_no as custNo,
+		 	Cr.book_quantity as bookQuantity, 
+		 	B.book_title as bookTitle, 
+		 	B.book_image as bookImage, 
+		 	B.fixed_price as fixedPrice, 
+		 	B.discount_rate as discountRate, 
+		 	B.book_stock as bookStock,
+		 	B.book_out_status as bookOutStatus
+		from 
+			cart Cr, book B
+		where 
+			Cr.customer_no=#value# 
+			and B.book_out_status like'N'
+			and Cr.book_no = B.book_no	
+	</select>
+	<select id="searchAllCart" parameterClass="int" resultClass="Cart">
+		select 
+			Cr.cart_no as no,
+			Cr.book_no as bookNo, 
+			Cr.customer_no as custNo,
+		 	Cr.book_quantity as bookQuantity, 
+		 	B.book_title as bookTitle, 
+		 	B.book_image as bookImage, 
+		 	B.fixed_price as fixedPrice, 
+		 	B.discount_rate as discountRate, 
+		 	B.book_stock as bookStock,
+		 	B.book_out_status as bookOutStatus
+		from 
+			cart Cr, book B
+		where 
+			Cr.book_no = B.book_no	
+	</select>
+	<select id="searchBookByCustomerNoAndOutStatusN" parameterClass="map" resultClass="Cart">
+		select 
+			Cr.cart_no as no,
+			Cr.book_no as bookNo, 
+			Cr.customer_no as custNo,
+		 	Cr.book_quantity as bookQuantity, 
+		 	B.book_title as bookTitle, 
+		 	B.book_image as bookImage, 
+		 	B.fixed_price as fixedPrice, 
+		 	B.discount_rate as discountRate, 
+		 	B.book_stock as bookStock,
+		 	B.book_out_status as bookOutStatus
+		from 
+			cart Cr, book B
+		where 
+			Cr.customer_no=#customerno# 
+			and B.book_out_status like'N'
+			and Cr.book_no = B.book_no
+			and Cr.book_no = #bookno#	
+	</select>	
+	<delete id="deleteOneCartByNo" parameterClass="hashmap">
+		delete 
+		from 
+			cart 
+		where 
+			customer_no=#custNo# and book_no= #bookNo#
+	</delete>
+	<update id="updateCartBookQuantityByNo" parameterClass="hashmap">
+		update 
+			cart
+		set 
+			book_quantity=#bookQuantity#
+		where 
+			customer_no=#custNo# and book_no = #bookNo#
+	</update>
+</sqlMap>

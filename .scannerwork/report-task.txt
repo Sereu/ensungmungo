@@ -1,0 +1,6 @@
+projectKey=lee_jiseon1:project
+serverUrl=http://192.168.10.253:9000
+serverVersion=6.7.3.38370
+dashboardUrl=http://192.168.10.253:9000/dashboard/index/lee_jiseon1:project
+ceTaskId=AWNJLP7NPY5ixdt3PMAd
+ceTaskUrl=http://192.168.10.253:9000/api/ce/task?id=AWNJLP7NPY5ixdt3PMAd
